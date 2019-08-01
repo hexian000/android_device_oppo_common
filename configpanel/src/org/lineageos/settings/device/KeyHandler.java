@@ -49,8 +49,6 @@ public class KeyHandler implements DeviceKeyHandler {
     private static final String TAG = KeyHandler.class.getSimpleName();
     private static final int GESTURE_REQUEST = 1;
 
-    private static final int ZEN_MODE_VIBRATION = 4;
-
     // Supported scancodes
     private static final int FLIP_CAMERA_SCANCODE = 249;
     private static final int MODE_TOTAL_SILENCE = 600;
@@ -62,11 +60,9 @@ public class KeyHandler implements DeviceKeyHandler {
 
     private static final SparseIntArray sSupportedSliderModes = new SparseIntArray();
     static {
-        sSupportedSliderModes.put(MODE_TOTAL_SILENCE, Settings.Global.ZEN_MODE_NO_INTERRUPTIONS);
-        sSupportedSliderModes.put(MODE_VIBRATION, ZEN_MODE_VIBRATION);
-        sSupportedSliderModes.put(MODE_PRIORITY_ONLY,
-                Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS);
-        sSupportedSliderModes.put(MODE_NONE, Settings.Global.ZEN_MODE_OFF);
+        sSupportedSliderModes.put(MODE_TOTAL_SILENCE, AudioManager.RINGER_MODE_SILENT);
+        sSupportedSliderModes.put(MODE_VIBRATION, AudioManager.RINGER_MODE_VIBRATE);
+        sSupportedSliderModes.put(MODE_NONE, AudioManager.RINGER_MODE_NORMAL);
     }
 
     private final Context mContext;
@@ -151,13 +147,7 @@ public class KeyHandler implements DeviceKeyHandler {
         }
 
         if (isSliderModeSupported) {
-            if (scanCode == MODE_VIBRATION) {
-                mNotificationManager.setZenMode(Settings.Global.ZEN_MODE_OFF, null, TAG);
-                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_VIBRATE);
-            } else {
-                mAudioManager.setRingerModeInternal(AudioManager.RINGER_MODE_NORMAL);
-                mNotificationManager.setZenMode(sSupportedSliderModes.get(scanCode), null, TAG);
-            }
+            mAudioManager.setRingerModeInternal(sSupportedSliderModes.get(scanCode));
             doHapticFeedback();
         } else if (!mEventHandler.hasMessages(GESTURE_REQUEST)) {
             Message msg = getMessageForKeyEvent(scanCode);
